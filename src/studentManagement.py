@@ -1,6 +1,6 @@
 class StudentManagement:
     """
-    Klasa zarzadzajaca studentami i ich ocenami.
+    Klasa zarządzająca studentami i ich ocenami.
     """
 
     def __init__(self):
@@ -12,38 +12,36 @@ class StudentManagement:
         Dodaje nowego studenta do bazy danych.
 
         Args:
-            name: Imie studenta.
-            age: Wiek studenta.
             id: Unikalny identyfikator studenta.
+            name: Imię studenta.
+            age: Wiek studenta.
 
         Returns:
-            True, jesli dodanie zakonczylo sie sukcesem.
+            True, jeśli dodanie zakończyło się sukcesem.
             False w przeciwnym wypadku.
         """
         if id in self.students:
             return False
-        else:
-            self.students[id] = [name, age]
-            return True
+        self.students[id] = [name, age]
+        return True
 
     def update_student(self, id: str, name: str, age: int) -> bool:
         """
-        Aktualizuje dane istniejacego studenta na podstawie identyfikatora.
+        Aktualizuje dane istniejącego studenta na podstawie identyfikatora.
 
         Args:
-            name: Imie studenta.
-            age: Wiek studenta.
             id: Unikalny identyfikator studenta.
+            name: Imię studenta.
+            age: Wiek studenta.
 
         Returns:
-            True, jesli aktualizacja zakonczyla sie sukcesem.
+            True, jeśli aktualizacja zakończyła się sukcesem.
             False w przeciwnym wypadku.
         """
-        if id in self.students:
-            self.students[id] = [name, age]
-            return True
-        else:
+        if id not in self.students:
             return False
+        self.students[id] = [name, age]
+        return True
 
     def remove_student(self, id: str) -> bool:
         """
@@ -53,18 +51,17 @@ class StudentManagement:
             id: Unikalny identyfikator studenta.
 
         Returns:
-            True, jesli usuniecie zakonczylo sie sukcesem.
+            True, jeśli usunięcie zakończyło się sukcesem.
             False w przeciwnym wypadku.
         """
         if id in self.students:
-            self.students.pop(id)
+            del self.students[id]
             return True
-        else:
-            return False
+        return False
 
     def add_grade(self, student_id: str, subject: str, grade: float) -> bool:
         """
-        Dodaje ocene z danego przedmiotu dla okreslonego studenta.
+        Dodaje ocenę z danego przedmiotu dla określonego studenta.
 
         Args:
             student_id: Unikalny identyfikator studenta.
@@ -72,30 +69,40 @@ class StudentManagement:
             grade: Ocena.
 
         Returns:
-            True, jesli dodanie oceny zakonczylo sie sukcesem (2.0, 3.0, 3.5, 4.0, 4.5, 5.0),
+            True, jeśli dodanie oceny zakończyło się sukcesem (2.0, 3.0, 3.5, 4.0, 4.5, 5.0),
             False w przeciwnym razie.
         """
-        if (student_id, subject) in self.grades:
-            self.grades[(student_id, subject)].append(grade)
-            return True
+        allowed_grades = {2.0, 3.0, 3.5, 4.0, 4.5, 5.0}
+        if student_id not in self.students or grade not in allowed_grades:
+            return False
+
+        key = (student_id, subject)
+        if key in self.grades:
+            self.grades[key].append(grade)
         else:
-            self.grades[(student_id, subject)] = [grade]
-            return True
+            self.grades[key] = [grade]
+        return True
 
     def avg_grades(self, subject: str) -> float:
         """
-        Oblicza srednia ocen z danego przedmiotu dla wszystkich studentow.
+        Oblicza średnią ocen z danego przedmiotu dla wszystkich studentów.
 
         Args:
             subject: Nazwa przedmiotu.
 
         Returns:
-            Srednia ocen z przedmiotu jako liczba zmiennoprzecinkowa.
+            Średnia ocen z przedmiotu jako liczba zmiennoprzecinkowa.
         """
-        pass  # Implementacja obliczania sredniej ocen
+        total = 0.0
+        count = 0
+        for (sid, subj), grades in self.grades.items():
+            if subj == subject:
+                total += sum(grades)
+                count += len(grades)
+        return total / count if count != 0 else 0.0
 
     def get_students(self):
         return list(self.students.values())
 
-    def get_student_grades(self, id, subject):
-        return list(self.grades[(id, subject)])
+    def get_student_grades(self, id: str, subject: str):
+        return list(self.grades.get((id, subject), []))
